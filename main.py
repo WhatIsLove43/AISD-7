@@ -1,77 +1,43 @@
 import itertools
 
 class Tree:
-    def __init__(self, K):
-    #Инициализация класса Tree.
-    #:param K: количество вершин дерева
+    def init(self, K):
+        self.K = K
+        self.vertices = list(range(1, K + 1))
+        self.leaf_indices = self.get_leaf_indices()
 
-        self.K = K  # Количество вершин
-        self.edges = []  # Список ребер дерева (для связи между вершинами)
-        self.labeling = []  # Оптимальная разметка вершин
+    def is_even(self, n):
+        return n % 2 == 0
 
-    def add_edge(self, parent, child):
-    #Добавляет ребро в структуру дерева.
-    #:paramparent: родительская вершина
-    #:paramchild: дочерняя вершина
-
-        self.edges.append((parent, child))
-
-    def find_leaves(self):
-    #Находит листья дерева (вершины, которые не являются родителями).
-    #:return: множество листьев
-
-        parents = set(edge[0] for edge in self.edges)
-        all_vertices = set(range(1, self.K + 1))
-        leaves = all_vertices - parents # Листья — это вершины, которые не в списке родителей
-        return leaves
+    def get_leaf_indices(self):
+        if self.K % 2 == 0:
+            return list(range((self.K // 2), self.K))
+        else:
+            return list(range(((self.K // 2) + 1), self.K))
 
     def find_optimal_labeling(self):
-    #Находит оптимальную разметку вершин, максимизирующую сумму чисел на листьях.
+        if self.K <= 0:
+            print("Количество вершин должно быть положительным числом.")
+            return
 
-        best_sum = float('-inf')  # Переменная для хранения максимальной суммы
-        best_labeling = None# Переменная для хранения оптимальной разметки
+        optimal_labeling = None
+        min_leaf_sum = float('inf')
 
-        # Генерируем все возможные перестановки чисел от 1 до K
-        for labeling in itertools.permutations(range(1, self.K + 1)):
-            # Сопоставляем метки вершинам
-            vertex_labels = {i + 1: labeling[i] for i in range(self.K)}
-            leaves = self.find_leaves()  # Находим листья текущего дерева
-            leaf_sum = sum(vertex_labels[leaf] for leaf in leaves)  # Суммируем метки на листьях
+        for labeling in itertools.permutations(self.vertices):
+            leaf_values = [labeling[i] for i in self.leaf_indices]
 
-            # Обновляем оптимальную разметку, если текущая лучше
-            if leaf_sum>best_sum:
-                best_sum = leaf_sum
-                best_labeling = vertex_labels
+            if all(self.is_even(value) for value in leaf_values):
+                leaf_sum = sum(leaf_values)
+                if leaf_sum < min_leaf_sum:
+                    min_leaf_sum = leaf_sum
+                    optimal_labeling = labeling
 
-        # Сохраняем оптимальную разметку
-        self.labeling = best_labeling
-        print("Оптимальная разметка вершин:")
-        for vertex, label in self.labeling.items():
-            print(f"Вершина{vertex}: {label}")
-        print(f"Максимальная сумма чисел на листьях: {best_sum}")
+        if optimal_labeling:
+            print(f"Оптимальная разметка: {optimal_labeling}")
+            print(f"Минимальная сумма чисел на листьях: {min_leaf_sum}")
+        else:
+            print("Не найдено разметок, удовлетворяющих условиям.")
 
-
-def main():
-    # Ввод данных
-    K = int(input("Введите количество вершин дерева (K): "))
-    tree = Tree(K)
-
-    print("Введите ребра дерева в формате 'родитель дочерний' (для завершения введите пустую строку):")
-    while True:
-        edge = input()
-        if not edge:  # Если строка пустая, завершаем ввод
-            break
-        parent, child = map(int, edge.split())
-        tree.add_edge(parent, child)
-
-    # Вывод структуры дерева
-    print("\nСтруктура дерева (ребра):")
-    for edge in tree.edges:
-        print(f"{edge[0]} ->{edge[1]}")
-
-    # Нахождение оптимальной разметки
-    tree.find_optimal_labeling()
-
-
-if __name__ == "__main__":
-    main()
+K = int(input("Введите количество вершин K: "))
+tree_labeling = Tree(K)
+tree_labeling.find_optimal_labeling()
